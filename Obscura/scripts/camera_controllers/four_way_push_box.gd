@@ -23,31 +23,68 @@ func _process(delta: float) -> void:
 	var cpos = global_position
 	var box_width = pushbox_bottom_right.x - pushbox_top_left.x 
 	var box_height = pushbox_bottom_right.y - pushbox_top_left.y
-	
-	
-	
-	
-	
-	
-	
+	var su_box_width = speedup_zone_bottom_right.x - speedup_zone_top_left.x 
+	var su_box_height = speedup_zone_bottom_right.y - speedup_zone_top_left.y
+	var target_vel = target.velocity.length()
 	
 	#boundary checks for pushbox
 	#left
 	var diff_between_left_edges = (tpos.x - target.WIDTH / 2.0) - (cpos.x - box_width / 2.0)
+	var diff_between_right_edges = (tpos.x + target.WIDTH / 2.0) - (cpos.x + box_width / 2.0)
+	var diff_between_top_edges = (tpos.z - target.HEIGHT / 2.0) - (cpos.z - box_height / 2.0)
+	var diff_between_bottom_edges = (tpos.z + target.HEIGHT / 2.0) - (cpos.z + box_height / 2.0)
+	
+	var su_diff_between_left_edges = (tpos.x - target.WIDTH / 2.0) - (cpos.x - su_box_width / 2.0)
+	var su_diff_between_right_edges = (tpos.x + target.WIDTH / 2.0) - (cpos.x + su_box_width / 2.0)
+	var su_diff_between_top_edges = (tpos.z - target.HEIGHT / 2.0) - (cpos.z - su_box_height / 2.0)
+	var su_diff_between_bottom_edges = (tpos.z + target.HEIGHT / 2.0) - (cpos.z + su_box_height / 2.0)
+
+	var on_left_right_push_zone:bool = false
+	var on_top_bottom_push_zone:bool = false
 	if diff_between_left_edges < 0:
 		global_position.x += diff_between_left_edges
+		on_left_right_push_zone = true
 	#right
-	var diff_between_right_edges = (tpos.x + target.WIDTH / 2.0) - (cpos.x + box_width / 2.0)
 	if diff_between_right_edges > 0:
 		global_position.x += diff_between_right_edges
+		on_left_right_push_zone = true
 	#top
-	var diff_between_top_edges = (tpos.z - target.HEIGHT / 2.0) - (cpos.z - box_height / 2.0)
 	if diff_between_top_edges < 0:
 		global_position.z += diff_between_top_edges
+		on_top_bottom_push_zone = true
 	#bottom
-	var diff_between_bottom_edges = (tpos.z + target.HEIGHT / 2.0) - (cpos.z + box_height / 2.0)
 	if diff_between_bottom_edges > 0:
 		global_position.z += diff_between_bottom_edges
+		on_top_bottom_push_zone = true
+		
+
+	if su_diff_between_left_edges < 0:
+		if target.velocity.x <= 0:
+			if not on_top_bottom_push_zone:
+				global_position.z += target.velocity.z * push_ratio
+			if not on_left_right_push_zone:
+				global_position.x += target.velocity.x * push_ratio
+		#right
+	elif su_diff_between_right_edges > 0:
+		if target.velocity.x >= 0:
+			if not on_top_bottom_push_zone:
+				global_position.z += target.velocity.z * push_ratio
+			if not on_left_right_push_zone:
+				global_position.x += target.velocity.x * push_ratio
+		#top
+	elif su_diff_between_top_edges < 0:
+		if target.velocity.z <= 0:
+			if not on_top_bottom_push_zone:
+				global_position.z += target.velocity.z * push_ratio
+			if not on_left_right_push_zone:
+				global_position.x += target.velocity.x * push_ratio
+		#bottom
+	elif su_diff_between_bottom_edges > 0:
+		if target.velocity.z >= 0:
+			if not on_top_bottom_push_zone:
+				global_position.z += target.velocity.z * push_ratio
+			if not on_left_right_push_zone:
+				global_position.x += target.velocity.x * push_ratio
 		
 	super(delta)
 
