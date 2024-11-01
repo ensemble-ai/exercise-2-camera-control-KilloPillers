@@ -15,78 +15,77 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if !current:
 		return
-	
+		
 	if draw_camera_logic:
 		draw_logic()
+		
+	super(delta)
+	
+
+# had to use phyics process here so that the camera was smooth
+func _physics_process(delta: float) -> void:
+	if !current:
+		return
 	
 	var tpos = target.global_position
 	var cpos = global_position
+	
 	var box_width = pushbox_bottom_right.x - pushbox_top_left.x 
 	var box_height = pushbox_bottom_right.y - pushbox_top_left.y
+	
 	var su_box_width = speedup_zone_bottom_right.x - speedup_zone_top_left.x 
 	var su_box_height = speedup_zone_bottom_right.y - speedup_zone_top_left.y
-	var target_vel = target.velocity.length()
 	
 	#boundary checks for pushbox
-	#left
-	var diff_between_left_edges = (tpos.x - target.WIDTH / 2.0) - (cpos.x - box_width / 2.0)
-	var diff_between_right_edges = (tpos.x + target.WIDTH / 2.0) - (cpos.x + box_width / 2.0)
-	var diff_between_top_edges = (tpos.z - target.HEIGHT / 2.0) - (cpos.z - box_height / 2.0)
-	var diff_between_bottom_edges = (tpos.z + target.HEIGHT / 2.0) - (cpos.z + box_height / 2.0)
 	
 	var su_diff_between_left_edges = (tpos.x - target.WIDTH / 2.0) - (cpos.x - su_box_width / 2.0)
 	var su_diff_between_right_edges = (tpos.x + target.WIDTH / 2.0) - (cpos.x + su_box_width / 2.0)
 	var su_diff_between_top_edges = (tpos.z - target.HEIGHT / 2.0) - (cpos.z - su_box_height / 2.0)
 	var su_diff_between_bottom_edges = (tpos.z + target.HEIGHT / 2.0) - (cpos.z + su_box_height / 2.0)
 
-	var on_left_right_push_zone:bool = false
-	var on_top_bottom_push_zone:bool = false
-	if diff_between_left_edges < 0:
-		global_position.x += diff_between_left_edges
-		on_left_right_push_zone = true
-	#right
-	if diff_between_right_edges > 0:
-		global_position.x += diff_between_right_edges
-		on_left_right_push_zone = true
-	#top
-	if diff_between_top_edges < 0:
-		global_position.z += diff_between_top_edges
-		on_top_bottom_push_zone = true
-	#bottom
-	if diff_between_bottom_edges > 0:
-		global_position.z += diff_between_bottom_edges
-		on_top_bottom_push_zone = true
-		
 
 	if su_diff_between_left_edges < 0:
-		if target.velocity.x <= 0:
-			if not on_top_bottom_push_zone:
+		if target.velocity.x < 0 or is_zero_approx(target.velocity.x):
 				global_position.z += target.velocity.z * push_ratio
-			if not on_left_right_push_zone:
 				global_position.x += target.velocity.x * push_ratio
 		#right
 	elif su_diff_between_right_edges > 0:
-		if target.velocity.x >= 0:
-			if not on_top_bottom_push_zone:
+		if target.velocity.x > 0 or is_zero_approx(target.velocity.x):
 				global_position.z += target.velocity.z * push_ratio
-			if not on_left_right_push_zone:
 				global_position.x += target.velocity.x * push_ratio
 		#top
 	elif su_diff_between_top_edges < 0:
-		if target.velocity.z <= 0:
-			if not on_top_bottom_push_zone:
+		if target.velocity.z < 0 or is_zero_approx(target.velocity.z):
 				global_position.z += target.velocity.z * push_ratio
-			if not on_left_right_push_zone:
 				global_position.x += target.velocity.x * push_ratio
 		#bottom
 	elif su_diff_between_bottom_edges > 0:
-		if target.velocity.z >= 0:
-			if not on_top_bottom_push_zone:
+		if target.velocity.z > 0 or is_zero_approx(target.velocity.z):
 				global_position.z += target.velocity.z * push_ratio
-			if not on_left_right_push_zone:
 				global_position.x += target.velocity.x * push_ratio
-		
-	super(delta)
+	
+	tpos = target.global_position
+	cpos = global_position
+	
+	var diff_between_left_edges = (tpos.x - target.WIDTH / 2.0) - (cpos.x - box_width / 2.0)
+	var diff_between_right_edges = (tpos.x + target.WIDTH / 2.0) - (cpos.x + box_width / 2.0)
+	var diff_between_top_edges = (tpos.z - target.HEIGHT / 2.0) - (cpos.z - box_height / 2.0)
+	var diff_between_bottom_edges = (tpos.z + target.HEIGHT / 2.0) - (cpos.z + box_height / 2.0)
+
+	if diff_between_left_edges < 0:
+		global_position.x += diff_between_left_edges
+
+	#right
+	if diff_between_right_edges > 0:
+		global_position.x += diff_between_right_edges
+
+	#top
+	if diff_between_top_edges < 0:
+		global_position.z += diff_between_top_edges
+
+	#bottom
+	if diff_between_bottom_edges > 0:
+		global_position.z += diff_between_bottom_edges
 
 
 func draw_logic() -> void:
